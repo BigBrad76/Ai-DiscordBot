@@ -1,0 +1,69 @@
+import discord #The nice discord library. 
+from discord.ext import commands #This is giving us access to slash commands.
+from discord import app_commands #This is also giving us access to slash commands.
+import os #To run discord on this computer.
+from dotenv import load_dotenv #This is how we load our Token from a different file to keep it secure. 
+from typing import Final #This is something that allows us to make our Token unchangable in the code. 
+
+#This is for a slash command later and idk where else to put it yet.
+love = "i love you"
+hate = "i hate you"
+#This is token loading code. 
+load_dotenv()
+TOKEN: Final[str] = os.getenv("DISCORD_TOKEN")
+
+#Bot startup code. 
+class Client(commands.Bot):
+    async def on_ready(self):
+        print(f"{client.user} is now running!")
+
+#This try and except loop is going to force discord to sync up to our bot to recieve new slash commands.
+        try:
+            guild = discord.Object(id=1296155506586419230)
+            synced = await self.tree.sync(guild=guild)
+            print(f"Synced {len(synced)} commands to guild {guild.id}")
+        except Exception as e:
+            print(f"Error syncing commands: {e}")
+
+#Bot setup code.
+intents = discord.Intents.default()
+intents.message_content = True
+client = Client(command_prefix="!", intents=intents)
+
+#Slash command code. We specifically have this slash command working in ONLY our server right now and we can release it globally later.
+GUILD_ID = discord.Object(id=1296155506586419230)
+@client.tree.command(name="test_slash", description="Test out this slash command!", guild=GUILD_ID)
+async def slashtest(interaction: discord.Interaction):
+    await interaction.response.send_message("Slash commands! Yipee!")
+ 
+@client.tree.command(name="slash_with_argument", description="Testing out slash commands with user input arguments", guild=GUILD_ID)
+async def argumenttest(interaction: discord.Interaction, user_input: str, user_num: int):
+    await interaction.response.send_message(f"The argument you gave me was, '{user_input}', and the number you gave me was, '{user_num}'.")
+    
+@client.tree.command(name="argument_with_if", description="Trying if statements in slash commands", guild=GUILD_ID)
+async def ifstatements(interaction: discord.Interaction, message: str):
+    if message.lower() == love:
+        await interaction.response.send_message("I love you too.")
+    elif message.lower() == hate:
+        await interaction.response.send_message("I'm going to curse you and your lineage until the end of time with ugly spouses, children that don't listen, and a plague of the mind that causes incompetency in all your endeavors.")
+    else:
+        await interaction.response.send_message("Say 'I love you' in this command instead.")
+
+#Message functionality code, the purpose of it is to allow the bot to see messages and respond to them.
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    if message.content.startswith("-help"):
+        await message.channel.send("Hey! Right now I don't have any options, but my developers will be making some.")
+    elif message.content.startswith("-hello"):
+        await message.channel.send(f"Hiya, {message.author}!")
+
+#This is where we bring the token to talk to Discord.
+def main() -> None:
+    client.run(token=TOKEN)
+
+#This is somehow dangerously important and if you delete it the code doesn't work but idk why. 
+if __name__ == "__main__":
+    main()
